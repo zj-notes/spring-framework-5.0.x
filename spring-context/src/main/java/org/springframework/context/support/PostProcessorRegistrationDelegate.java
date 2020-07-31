@@ -68,6 +68,10 @@ final class PostProcessorRegistrationDelegate {
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
 			// 遍历查询 BeanFactoryPostProcessor 是否为 BeanDefinitionRegistryPostProcessor
+			/**
+			 * springboot SpringApplication.run()中第五步prepareContext()，这里开始遍历上面三个内部类，如果属于BeanDefinitionRegistryPostProcessor 子类，
+			 * 加入到bean注册的集合，否则加入到 regularPostProcessors中，从名字可以看出是有规律集合。
+			 */
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					// 当前 postProcessor 为 BeanDefinitionRegistryPostProcessor 则执行 postProcessBeanDefinitionRegistry 方法

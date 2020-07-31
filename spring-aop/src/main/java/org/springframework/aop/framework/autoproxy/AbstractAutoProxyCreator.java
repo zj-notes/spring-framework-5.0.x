@@ -233,19 +233,16 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
 			return bean;
 		}
-
 		// 如果该Bean基础框架Bean或者免代理得Bean，那也不处理
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
-
 		// 逻辑同上，对于实现了Advice，Advisor，AopInfrastructureBean接口的bean，都认为是spring aop的基础框架类，不能对他们创建代理对象，
 		// 同时子类也可以覆盖shouldSkip方法来指定不对哪些bean进行代理
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
-
 		// Create proxy if we have advice.
 		// 如果有advise则创建代理
 		// getAdvicesAndAdvisorsForBean 该方法由子类实现，如国有 Advice 切面切进去了，我们就要给他代理
@@ -321,27 +318,28 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 		return null;
 	}
 
-	// 创建代理对象  specificInterceptors：作用在这个Bean上的增强器们
-	// 这里需要注意的地方：入参是targetSource  而不是 target
+	// 创建代理对象  specificInterceptors 作用在这个Bean上的增强器
+	// 这里需要注意的地方：入参是targetSource 而不是 target
 	// 所以最终代理的是  ``每次AOP代理处理方法调用时，目标实例都会用到TargetSource实现``
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName, @Nullable Object[] specificInterceptors, TargetSource targetSource) {
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
 
-		// 这个我们非常熟悉了ProxyFactory   创建代理对象的三大方式之一
+		// ProxyFactory 创建代理对象的三大方式之一
 		ProxyFactory proxyFactory = new ProxyFactory();
 		// 复制当前类的相关配置，因为当前类它也是个ProxyConfig
 		proxyFactory.copyFrom(this);
 
-		// 看看是否是基于类的代理（CGLIB），若表面上是基于接口的代理  我们还需要进一步去检测
+		// 看看是否是基于类的代理（CGLIB）
+		// 判断的内容是<aop:config>这个节点中proxy-target-class="false"或者proxy-target-class不配置,即不使用CGLIB生成代理
 		if (!proxyFactory.isProxyTargetClass()) {
 			// shouldProxyTargetClass 方法用于判断是否应该使用 targetClass 类而不是接口来进行代理
 			// 默认实现为和该bean定义是否属性值 preserveTargetClass 为true有关。默认情况下都不会有此属性值的
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}
-			// 到此处，上面说了，就是把这个类实现的接口们，都放进proxyFactory（当然也会处理一些特殊的接口~~~不算数的）
+			// 到此处，上面说了，就是把这个类实现的接口们，都放进proxyFactory
 			else {
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}

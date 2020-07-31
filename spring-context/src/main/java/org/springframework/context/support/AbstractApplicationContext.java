@@ -593,6 +593,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// 5、调用 BeanFactoryPostProcessor 各个实现类的 postProcessBeanFactory(factory) 方法
 				// BeanFactoryPostProcessor 为spring在容器初始化时对外对外暴露的扩展点，
 				// Spring IoC容器允许 BeanFactoryPostProcessor 在容器加载注册 BeanDefinition 完成之后读取 BeanDefinition (配置元数据)，并可以修改它
+				//////// springboot流程中，此流程会解析主类的各项注解
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// 6、注册 BeanPostProcessor 的实现类，(注意和 BeanFactoryPostProcessor 的区别)
@@ -758,6 +759,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// getBeanFactoryPostProcessors()方法返回的是applicationContext的成员变量beanFactoryPostProcessors，
 		// 该成员变量的值是 AbstractApplicationContext.addBeanFactoryPostProcessor 方法被调用的时候设置的
 		// AbstractApplicationContext.addBeanFactoryPostProcessor 方法是留给业务扩展时调用的，例如在 springboot 初始化时，ConfigurationWarningsApplicationContextInitializer 类的 initialize 方法中就有调用
+		////// springboot中 getBeanFactoryPostProcessors() 会返回三个 BeanFactoryPostProcessor 接口的实现类；
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

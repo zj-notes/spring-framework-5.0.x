@@ -84,7 +84,7 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.CONFI
  * @author Phillip Webb
  * @since 3.0
  */
-// 它是来处理@Configuration配置文件的。它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
+// 它是来处理 @Configuration 配置文件的。它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
 		PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
 
