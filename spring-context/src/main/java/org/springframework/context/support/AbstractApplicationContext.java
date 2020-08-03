@@ -759,7 +759,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// getBeanFactoryPostProcessors()方法返回的是applicationContext的成员变量beanFactoryPostProcessors，
 		// 该成员变量的值是 AbstractApplicationContext.addBeanFactoryPostProcessor 方法被调用的时候设置的
 		// AbstractApplicationContext.addBeanFactoryPostProcessor 方法是留给业务扩展时调用的，例如在 springboot 初始化时，ConfigurationWarningsApplicationContextInitializer 类的 initialize 方法中就有调用
-		////// springboot中 getBeanFactoryPostProcessors() 会返回三个 BeanFactoryPostProcessor 接口的实现类；
+		////// springboot中 getBeanFactoryPostProcessors() 会返回三个 BeanFactoryPostProcessor 接口的实现类；(请到springboot中继续看源码)
+		//////  ConfigurationWarningsApplicationContextInitializer$ConfigurationWarningsPostProcessor
+		//////  SharedMetadataReaderFactoryContextInitializer$CachingMetadataReaderFactoryPostProcessor
+		//////  ConfigFileApplicationListener$PropertySourceOrderingPostProcessor
+		//////  此处也会执行 ConfigurationClassPostProcessor 类，加载 @Configuration 注解
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

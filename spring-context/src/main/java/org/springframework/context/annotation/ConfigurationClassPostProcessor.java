@@ -66,27 +66,8 @@ import org.springframework.util.ClassUtils;
 
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 
-/**
- * {@link BeanFactoryPostProcessor} used for bootstrapping processing of
- * {@link Configuration @Configuration} classes.
- *
- * <p>Registered by default when using {@code <context:annotation-config/>} or
- * {@code <context:component-scan/>}. Otherwise, may be declared manually as
- * with any other BeanFactoryPostProcessor.
- *
- * <p>This post processor is priority-ordered as it is important that any
- * {@link Bean} methods declared in {@code @Configuration} classes have
- * their corresponding bean definitions registered before any other
- * {@link BeanFactoryPostProcessor} executes.
- *
- * @author Chris Beams
- * @author Juergen Hoeller
- * @author Phillip Webb
- * @since 3.0
- */
 // 它是来处理 @Configuration 配置文件的。它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
-public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
-		PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
+public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor, PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
 
 	private static final String IMPORT_REGISTRY_BEAN_NAME =
 			ConfigurationClassPostProcessor.class.getName() + ".importRegistry";
@@ -138,52 +119,20 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		return Ordered.LOWEST_PRECEDENCE;  // within PriorityOrdered
 	}
 
-	/**
-	 * Set the {@link SourceExtractor} to use for generated bean definitions
-	 * that correspond to {@link Bean} factory methods.
-	 */
 	public void setSourceExtractor(@Nullable SourceExtractor sourceExtractor) {
 		this.sourceExtractor = (sourceExtractor != null ? sourceExtractor : new PassThroughSourceExtractor());
 	}
 
-	/**
-	 * Set the {@link ProblemReporter} to use.
-	 * <p>Used to register any problems detected with {@link Configuration} or {@link Bean}
-	 * declarations. For instance, an @Bean method marked as {@code final} is illegal
-	 * and would be reported as a problem. Defaults to {@link FailFastProblemReporter}.
-	 */
 	public void setProblemReporter(@Nullable ProblemReporter problemReporter) {
 		this.problemReporter = (problemReporter != null ? problemReporter : new FailFastProblemReporter());
 	}
 
-	/**
-	 * Set the {@link MetadataReaderFactory} to use.
-	 * <p>Default is a {@link CachingMetadataReaderFactory} for the specified
-	 * {@linkplain #setBeanClassLoader bean class loader}.
-	 */
 	public void setMetadataReaderFactory(MetadataReaderFactory metadataReaderFactory) {
 		Assert.notNull(metadataReaderFactory, "MetadataReaderFactory must not be null");
 		this.metadataReaderFactory = metadataReaderFactory;
 		this.setMetadataReaderFactoryCalled = true;
 	}
 
-	/**
-	 * Set the {@link BeanNameGenerator} to be used when triggering component scanning
-	 * from {@link Configuration} classes and when registering {@link Import}'ed
-	 * configuration classes. The default is a standard {@link AnnotationBeanNameGenerator}
-	 * for scanned components (compatible with the default in {@link ClassPathBeanDefinitionScanner})
-	 * and a variant thereof for imported configuration classes (using unique fully-qualified
-	 * class names instead of standard component overriding).
-	 * <p>Note that this strategy does <em>not</em> apply to {@link Bean} methods.
-	 * <p>This setter is typically only appropriate when configuring the post-processor as
-	 * a standalone bean definition in XML, e.g. not using the dedicated
-	 * {@code AnnotationConfig*} application contexts or the {@code
-	 * <context:annotation-config>} element. Any bean name generator specified against
-	 * the application context will take precedence over any value set here.
-	 * @since 3.1.1
-	 * @see AnnotationConfigApplicationContext#setBeanNameGenerator(BeanNameGenerator)
-	 * @see AnnotationConfigUtils#CONFIGURATION_BEAN_NAME_GENERATOR
-	 */
 	public void setBeanNameGenerator(BeanNameGenerator beanNameGenerator) {
 		Assert.notNull(beanNameGenerator, "BeanNameGenerator must not be null");
 		this.localBeanNameGeneratorSet = true;
@@ -215,9 +164,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 
-	/**
-	 * Derive further bean definitions from the configuration classes in the registry.
-	 */
+	// 当前类继承了 BeanDefinitionRegistryPostProcessor 接口，执行 postProcessBeanDefinitionRegistry 方法
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 		int registryId = System.identityHashCode(registry);
@@ -256,12 +203,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
 
-	/**
-	 * Build and validate a configuration model based on the registry of
-	 * {@link Configuration} classes.
-	 */
+	// @Configuration 注解解析
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+		// 所有带 @Configuration 注解的bean, @Configuration 注解是组合注解，包含 @Component
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
 		for (String beanName : candidateNames) {
@@ -306,7 +251,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			this.environment = new StandardEnvironment();
 		}
 
-		// Parse each @Configuration class
 		// 解析被 @Configuration 注解的类
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,

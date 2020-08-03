@@ -84,26 +84,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 /**
- * Parses a {@link Configuration} class definition, populating a collection of
- * {@link ConfigurationClass} objects (parsing a single Configuration class may result in
- * any number of ConfigurationClass objects because one Configuration class may import
- * another using the {@link Import} annotation).
- *
- * <p>This class helps separate the concern of parsing the structure of a Configuration
- * class from the concern of registering BeanDefinition objects based on the content of
- * that model (with the exception of {@code @ComponentScan} annotations which need to be
- * registered immediately).
- *
- * <p>This ASM-based implementation avoids reflection and eager class loading in order to
- * interoperate effectively with lazy class loading in a Spring ApplicationContext.
- *
- * @author Chris Beams
- * @author Juergen Hoeller
- * @author Phillip Webb
- * @author Sam Brannen
- * @author Stephane Nicoll
- * @since 3.0
- * @see ConfigurationClassBeanDefinitionReader
+ * 配置类的解析类，所有的解析逻辑在parser.parse(candidates)
  */
 class ConfigurationClassParser {
 
@@ -140,11 +121,6 @@ class ConfigurationClassParser {
 	@Nullable
 	private List<DeferredImportSelectorHolder> deferredImportSelectors;
 
-
-	/**
-	 * Create a new {@link ConfigurationClassParser} instance that will be used
-	 * to populate the set of configuration classes.
-	 */
 	public ConfigurationClassParser(MetadataReaderFactory metadataReaderFactory,
 			ProblemReporter problemReporter, Environment environment, ResourceLoader resourceLoader,
 			BeanNameGenerator componentScanBeanNameGenerator, BeanDefinitionRegistry registry) {
@@ -159,7 +135,9 @@ class ConfigurationClassParser {
 	}
 
 
-	public void parse(Set<BeanDefinitionHolder> configCandidates) { this.deferredImportSelectors = new LinkedList<>();
+	// @Configuration 类解析
+	public void parse(Set<BeanDefinitionHolder> configCandidates) {
+		this.deferredImportSelectors = new LinkedList<>();
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
@@ -181,6 +159,7 @@ class ConfigurationClassParser {
 						"Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
 			}
 		}
+		// 开始执行默认配置
 		processDeferredImportSelectors();
 	}
 
@@ -213,6 +192,7 @@ class ConfigurationClassParser {
 	}
 
 
+	// 具体解析流程
 	protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
@@ -224,20 +204,17 @@ class ConfigurationClassParser {
 				if (existingClass.isImported()) {
 					existingClass.mergeImportedBy(configClass);
 				}
-				// Otherwise ignore new imported config class; existing non-imported class overrides it.
 				return;
 			}
 			else {
-				// Explicit bean definition found, probably replacing an import.
-				// Let's remove the old one and go with the new one.
 				this.configurationClasses.remove(configClass);
 				this.knownSuperclasses.values().removeIf(configClass::equals);
 			}
 		}
 
-		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
+			// 循环处理bean，如果有父类，则处理父类。直至结束。
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);
@@ -245,22 +222,13 @@ class ConfigurationClassParser {
 		this.configurationClasses.put(configClass, configClass);
 	}
 
-	/**
-	 * Apply processing and build a complete {@link ConfigurationClass} by reading the
-	 * annotations, members and methods from the source class. This method can be called
-	 * multiple times as relevant sources are discovered.
-	 * @param configClass the configuration class being build
-	 * @param sourceClass a source class
-	 * @return the superclass, or {@code null} if none found or previously processed
-	 */
 	@Nullable
-	protected final SourceClass doProcessConfigurationClass(ConfigurationClass configClass, SourceClass sourceClass)
-			throws IOException {
+	protected final SourceClass doProcessConfigurationClass(ConfigurationClass configClass, SourceClass sourceClass) throws IOException {
 
-		// Recursively process any member (nested) classes first
+		// 处理内部类逻辑，由于传来的参数是我们的启动类，不含内部类，所以跳过
 		processMemberClasses(configClass, sourceClass);
 
-		// Process any @PropertySource annotations
+		// 针对属性配置的解析
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
 				org.springframework.context.annotation.PropertySource.class)) {
@@ -273,16 +241,12 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// Process any @ComponentScan annotations
-		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
-				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
-		if (!componentScans.isEmpty() &&
-				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
+		// @ComponentScan 注解解析
+		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable( sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
+		if (!componentScans.isEmpty() && !this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
-				// The config class is annotated with @ComponentScan -> perform the scan immediately
-				Set<BeanDefinitionHolder> scannedBeanDefinitions =
-						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
-				// Check the set of scanned definitions for any further config classes and parse recursively if needed
+				Set<BeanDefinitionHolder> scannedBeanDefinitions = this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+				// 遍历我们项目中的bean，如果是注解定义的bean，则进一步解析
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
 					BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
 					if (bdCand == null) {
@@ -295,12 +259,11 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// Process any @Import annotations
+		// 这里又是一个递归解析，获取导入的配置类。很多情况下，导入的配置类中会同样包含导入类注解。
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
-		// Process any @ImportResource annotations
-		AnnotationAttributes importResource =
-				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
+		// 解析导入的 xml 配置类
+		AnnotationAttributes importResource = AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {
 			String[] resources = importResource.getStringArray("locations");
 			Class<? extends BeanDefinitionReader> readerClass = importResource.getClass("reader");
@@ -316,10 +279,9 @@ class ConfigurationClassParser {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
-		// Process default methods on interfaces
 		processInterfaces(configClass, sourceClass);
 
-		// Process superclass, if any
+		// 如果该类有父类
 		if (sourceClass.getMetadata().hasSuperClass()) {
 			String superclass = sourceClass.getMetadata().getSuperClassName();
 			if (superclass != null && !superclass.startsWith("java") &&
@@ -330,7 +292,7 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// No superclass -> processing is complete
+		// 递归实现，superclass为空，则结束递归中的循环
 		return null;
 	}
 
@@ -509,19 +471,6 @@ class ConfigurationClassParser {
 		return imports;
 	}
 
-	/**
-	 * Recursively collect all declared {@code @Import} values. Unlike most
-	 * meta-annotations it is valid to have several {@code @Import}s declared with
-	 * different values; the usual process of returning values from the first
-	 * meta-annotation on a class is not sufficient.
-	 * <p>For example, it is common for a {@code @Configuration} class to declare direct
-	 * {@code @Import}s in addition to meta-imports originating from an {@code @Enable}
-	 * annotation.
-	 * @param sourceClass the class to search
-	 * @param imports the imports collected so far
-	 * @param visited used to track visited classes to prevent infinite recursion
-	 * @throws IOException if there is any problem reading metadata from the named class
-	 */
 	private void collectImports(SourceClass sourceClass, Set<SourceClass> imports, Set<SourceClass> visited)
 			throws IOException {
 
@@ -542,25 +491,24 @@ class ConfigurationClassParser {
 		if (deferredImports == null) {
 			return;
 		}
-
 		deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
 		Map<Object, DeferredImportSelectorGrouping> groupings = new LinkedHashMap<>();
 		Map<AnnotationMetadata, ConfigurationClass> configurationClasses = new HashMap<>();
 		for (DeferredImportSelectorHolder deferredImport : deferredImports) {
+			// 获取配置类
 			Class<? extends Group> group = deferredImport.getImportSelector().getImportGroup();
 			DeferredImportSelectorGrouping grouping = groupings.computeIfAbsent(
 					(group != null ? group : deferredImport),
 					key -> new DeferredImportSelectorGrouping(createGroup(group)));
 			grouping.add(deferredImport);
-			configurationClasses.put(deferredImport.getConfigurationClass().getMetadata(),
-					deferredImport.getConfigurationClass());
+			configurationClasses.put(deferredImport.getConfigurationClass().getMetadata(), deferredImport.getConfigurationClass());
 		}
 		for (DeferredImportSelectorGrouping grouping : groupings.values()) {
 			grouping.getImports().forEach(entry -> {
 				ConfigurationClass configurationClass = configurationClasses.get(entry.getMetadata());
 				try {
-					processImports(configurationClass, asSourceClass(configurationClass),
-							asSourceClasses(entry.getImportClassName()), false);
+					// 再次递归解析配置类
+					processImports(configurationClass, asSourceClass(configurationClass), asSourceClasses(entry.getImportClassName()), false);
 				}
 				catch (BeanDefinitionStoreException ex) {
 					throw ex;
@@ -584,13 +532,10 @@ class ConfigurationClassParser {
 		return group;
 	}
 
-	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
-			Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
-
+	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass, Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
 		if (importCandidates.isEmpty()) {
 			return;
 		}
-
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}

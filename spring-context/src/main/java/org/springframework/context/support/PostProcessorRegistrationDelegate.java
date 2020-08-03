@@ -100,7 +100,7 @@ final class PostProcessorRegistrationDelegate {
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			// 放入 registryProcessors 集合
 			registryProcessors.addAll(currentRegistryProcessors);
-			// 然后这些bean会被invokeBeanDefinitionRegistryPostProcessors方法执行
+			// 然后这些bean会被 invokeBeanDefinitionRegistryPostProcessors 方法执行
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			currentRegistryProcessors.clear();
 
