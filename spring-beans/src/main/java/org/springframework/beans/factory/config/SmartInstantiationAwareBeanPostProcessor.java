@@ -22,21 +22,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
- * Extension of the {@link InstantiationAwareBeanPostProcessor} interface,
- * adding a callback for predicting the eventual type of a processed bean.
- *
- * <p><b>NOTE:</b> This interface is a special purpose interface, mainly for
- * internal use within the framework. In general, application-provided
- * post-processors should simply implement the plain {@link BeanPostProcessor}
- * interface or derive from the {@link InstantiationAwareBeanPostProcessorAdapter}
- * class. New methods might be added to this interface even in point releases.
- *
- * @author Juergen Hoeller
- * @since 2.0.3
- * @see InstantiationAwareBeanPostProcessorAdapter
- */
-
-/**
  * InstantiationAwareBeanPostProcessor 接口的扩展，多出了3个方法
  * 添加了用于预测已处理bean的最终类型的回调，再加上父接口的5个方法，所以实现这个接口需要实现8个方法
  * 主要作用也是在于目标对象的实例化过程中需要处理的事情
@@ -56,6 +41,11 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	}
 
 	// 解决循环引用问题
+	/**
+	 * 当A实例化之后，Spring IOC会对A依赖的属性进行填充，此时如果发现A依赖了B，会去实例化B。同样在填充B的属性时，如果B也引用了A，就发生了循环依赖。因为A还未创建完成，还未注入Spring中。
+	 * Spring的做法是通过对创建中的缓存一个回调函数，类似于一个埋点操作，如果后续填充属性阶段，发生了循环依赖，则通过触发该回调函数来结束该bean的初始化。
+	 * ​当对A实例化时，会提前暴露一个回调方法 ObjectFactory（Spring5中改为了函数式接口） 放入缓存。当B引用A，发现A还未实例化结束，就会通过缓存中的回调方法结束A的初始化流程，然后注入B。然后继续A的填充属性流程，将B注入A，然后结束循环依赖。
+	 */
 	default Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
 		return bean;
 	}

@@ -40,28 +40,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 		return true;
 	}
 
-	/**
-	 * Post-process the given property values before the factory applies them
-	 * to the given bean. Allows for checking whether all dependencies have been
-	 * satisfied, for example based on a "Required" annotation on bean property setters.
-	 * <p>Also allows for replacing the property values to apply, typically through
-	 * creating a new MutablePropertyValues instance based on the original PropertyValues,
-	 * adding or removing specific values.
-	 * <p>The default implementation returns the given {@code pvs} as-is.
-	 * @param pvs the property values that the factory is about to apply (never {@code null})
-	 * @param pds the relevant property descriptors for the target bean (with ignored
-	 * dependency types - which the factory handles specifically - already filtered out)
-	 * @param bean the bean instance created, but whose properties have not yet been set
-	 * @param beanName the name of the bean
-	 * @return the actual property values to apply to the given bean (can be the passed-in
-	 * PropertyValues instance), or {@code null} to skip property population
-	 * @throws org.springframework.beans.BeansException in case of errors
-	 * @see org.springframework.beans.MutablePropertyValues
-	 */
+	// 该方法用于属性注入，在 bean 初始化阶段属性填充时触发。@Autowired，@Resource 等注解原理基于此方法实现
 	@Nullable
-	default PropertyValues postProcessPropertyValues(
-			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
-
+	default PropertyValues postProcessPropertyValues( PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
 		return pvs;
 	}
 

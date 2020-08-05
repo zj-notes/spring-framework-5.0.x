@@ -724,13 +724,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		if (logger.isDebugEnabled()) {
 			logger.debug("Pre-instantiating singletons in " + this);
 		}
-		// this.beanDefinitionNames 保存了所有的 beanNames
+		// 获取我们容器中所有Bean定义的名称，this.beanDefinitionNames 保存了所有的 beanNames
 		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
 
 		// 开始所有的非懒加载的bean的初始化
 		for (String beanName : beanNames) {
 			// 合并父类的 BeanDefinition 的定义信息到当前类
-			// （ getMergedLocalBeanDefinition 里面递归地合并，合并了所有父类信息的 BeanDefinition 的类型是 RootBeanDefinition ，而刚从XML中解析后仅包含当前类信息的 BeanDefinition 类型是 GenericBeanDefinition ）
+			// （ getMergedLocalBeanDefinition 里面递归地合并，合并了所有父类信息的 BeanDefinition 的类型是 RootBeanDefinition ，
+			//  而刚从XML中解析后仅包含当前类信息的 BeanDefinition 类型是 GenericBeanDefinition ）
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			// 初始化类必须是非抽象类、并且是非懒加载的单例 BeanDefinition
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
@@ -757,7 +758,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		// 到这里的时候，所有的非懒加载的 singleton beans 已经完成了初始化
-		// 如果我们定义的bean是实现了SmartInitializingSingleton接口的，那么在这里得到回调
+		// 如果我们定义的bean是实现了 SmartInitializingSingleton 接口的，那么在这里得到回调
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
 			if (singletonInstance instanceof SmartInitializingSingleton) {
@@ -774,11 +775,6 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 	}
-
-
-	//---------------------------------------------------------------------
-	// Implementation of BeanDefinitionRegistry interface
-	//---------------------------------------------------------------------
 
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) throws BeanDefinitionStoreException {

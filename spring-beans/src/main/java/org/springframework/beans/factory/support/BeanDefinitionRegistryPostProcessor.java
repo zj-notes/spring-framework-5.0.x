@@ -22,15 +22,15 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 /**
  * 手动注册BeanDefinition（编程方式注册Bean定义）
  * 手动注册bean的两种方式：
- * 实现ImportBeanDefinitionRegistrar
- * 实现BeanDefinitionRegistryPostProcessor
+ * 实现 ImportBeanDefinitionRegistrar
+ * 实现 BeanDefinitionRegistryPostProcessor
  */
 /**
  * BeanDefinitionRegistryPostProcessor 接口可以看作是
  * BeanFactoryPostProcessor(可以对bean的定义（配置元数据）进行处理。也就是说，Spring IoC容器允许BeanFactoryPostProcessor在容器实际实例化任何其它的bean之前读取配置元数据，并有可能修改它)
- * ImportBeanDefinitionRegistrar的功能集合，
- * 既可以获取和修改BeanDefinition的元数据，也可以实现BeanDefinition的注册、移除等操作。
- * 有个重要实现类;ConfigurationClassPostProcessor，它是来处理@Configuration配置文件的。它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
+ * ImportBeanDefinitionRegistrar 的功能集合，
+ * 既可以获取和修改 BeanDefinition 的元数据，也可以实现BeanDefinition的注册、移除等操作。
+ * 有个重要实现类; ConfigurationClassPostProcessor，它是来处理@Configuration配置文件的。它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
  */
 /**
  * 在所有bean定义信息将要被加载，bean实例还未创建的时候加载
