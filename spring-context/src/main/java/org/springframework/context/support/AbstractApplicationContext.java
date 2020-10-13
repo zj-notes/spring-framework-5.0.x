@@ -593,7 +593,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// 5、调用 BeanFactoryPostProcessor 各个实现类的 postProcessBeanFactory(factory) 方法
 				// BeanFactoryPostProcessor 为spring在容器初始化时对外对外暴露的扩展点，
 				// Spring IoC容器允许 BeanFactoryPostProcessor 在容器加载注册 BeanDefinition 完成之后读取 BeanDefinition (配置元数据)，并可以修改它
-				//////// springboot流程中，此流程会解析主类的各项注解
+				//////// springboot 流程中，此流程会解析主类的各项注解，@EnableAutoConfiguration 注解会在这里解析
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// 6、注册 BeanPostProcessor 的实现类，(注意和 BeanFactoryPostProcessor 的区别)
