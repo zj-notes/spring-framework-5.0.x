@@ -1,6 +1,8 @@
 package com.tanglongan.aop;
 
+import org.springframework.stereotype.Service;
 
+@Service
 public class BusinessServiceImpl implements IBusinessService {
 	@Override
 	public void executeBusinessA() {

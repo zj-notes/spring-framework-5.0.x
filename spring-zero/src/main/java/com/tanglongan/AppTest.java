@@ -16,6 +16,10 @@ public class AppTest {
 //		BeanFactory annotationApplicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
 //		AppService appService = annotationApplicationContext.getBean(AppService.class);
 //		appService.print();
+//
+//		IBusinessService businessService = (IBusinessService) annotationApplicationContext.getBean("businessService");
+//		businessService.executeBusinessA();
+//		businessService.executeBusinessB();
 
 		// xml配置文件启动，核心方法refresh()
 		BeanFactory context = new ClassPathXmlApplicationContext("applicationContext.xml");
