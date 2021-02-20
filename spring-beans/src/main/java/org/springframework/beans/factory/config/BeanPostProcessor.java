@@ -46,6 +46,9 @@ import org.springframework.lang.Nullable;
  * 1. 改变bean的定义( BeanFactoryPostProcessor 接口) ，可以想象成修改了class文件，这样实例化出来的每个对象都变了；
  * 2. 只改变实例化的对象( BeanPostProcessor 接口,注意和 BeanFactoryPostProcessor 的区别)；
  */
+/**
+ * BeanPostProcessor 的实现类对每一个bean都调用 postProcessBeforeInitialization 和 postProcessAfterInitialization 方法
+ */
 public interface BeanPostProcessor {
 
 	/**

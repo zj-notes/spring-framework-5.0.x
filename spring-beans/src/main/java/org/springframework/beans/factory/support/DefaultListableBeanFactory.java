@@ -838,6 +838,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			else {
 				// Still in startup registration phase
 				// 将 BeanDefinition 放到这个 map 中，这个 map 保存了所有的 BeanDefinition
+					// 启动注册阶段，就在这把 ConfigurationClassPostProcessor 放入到beanDefinitionMap中。
 				this.beanDefinitionMap.put(beanName, beanDefinition);
 				// 这是个 ArrayList，所以会按照 bean 配置的顺序保存每一个注册的 Bean 的名字
 				this.beanDefinitionNames.add(beanName);

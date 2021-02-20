@@ -175,11 +175,14 @@ public abstract class AbstractApplicationEventMulticaster
 
 		Object source = event.getSource();
 		Class<?> sourceType = (source != null ? source.getClass() : null);
+		// 缓存的key有两个维度：消息来源+消息类型（关于消息来源可见ApplicationEvent构造方法的入参）
 		ListenerCacheKey cacheKey = new ListenerCacheKey(eventType, sourceType);
 
 		// retrieverCache是个ConcurrentHashMap
+		// ListenerRetriever中有个监听器的集合，并有些简单的逻辑封装，调用它的getApplicationListeners方法返回的监听类集合是排好序的(order注解排序)
 		ListenerRetriever retriever = this.retrieverCache.get(cacheKey);
 		if (retriever != null) {
+			// 如果retrieverCache中找到对应的监听器集合，就立即返回了
 			return retriever.getApplicationListeners();
 		}
 
@@ -188,14 +191,18 @@ public abstract class AbstractApplicationEventMulticaster
 				(ClassUtils.isCacheSafe(event.getClass(), this.beanClassLoader) &&
 						(sourceType == null || ClassUtils.isCacheSafe(sourceType, this.beanClassLoader)))) {
 			// Fully synchronized building and caching of a ListenerRetriever
+			// 先加锁
 			synchronized (this.retrievalMutex) {
+				// 双重判断的第二重，避免自己在BLOCK的时候其他线程已经将数据放入缓存了
 				retriever = this.retrieverCache.get(cacheKey);
 				if (retriever != null) {
 					return retriever.getApplicationListeners();
 				}
+				// 新建一个ListenerRetriever对象
 				retriever = new ListenerRetriever(true);
-				Collection<ApplicationListener<?>> listeners =
-						retrieveApplicationListeners(eventType, sourceType, retriever);
+				// retrieveApplicationListeners方法复制找出某个消息类型加来源类型对应的所有监听器
+				Collection<ApplicationListener<?>> listeners = retrieveApplicationListeners(eventType, sourceType, retriever);
+				// 存入retrieverCache
 				this.retrieverCache.put(cacheKey, retriever);
 				return listeners;
 			}

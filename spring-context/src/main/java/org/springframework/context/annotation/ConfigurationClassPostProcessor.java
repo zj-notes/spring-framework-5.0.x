@@ -66,7 +66,12 @@ import org.springframework.util.ClassUtils;
 
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 
-// 它是来处理 @Configuration 配置文件的。它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
+// ConfigurationClassPostProcessor 是来处理 @Configuration 配置文件的，是 springboot 中最主要的配置类，@Component,@ComponentScan,@Import,@Bean这些最常用到的注解都是由ConfigurationClassPostProcessor负责解析的
+// 该类在 new AnnotationConfigApplicationContext(AppConfig.class) 的构造函数中 this.reader = new AnnotatedBeanDefinitionReader(this); 被注入 beanDefinitionMap 中
+// 该类实现的 BeanFactoryPostProcessor 和 BeanDefinitionRegistryPostProcessor 接口方法在 refresh()->invokeBeanFactoryPostProcessors中执行，同时接口方法中实现 @Configuration 等几个注解解析的具体实现
+
+// 它最终就是解析配置文件里的@Import、@Bean等，然后把定义信息都注册进去
+// 该类实现了 BeanFactoryPostProcessor 和 BeanDefinitionRegistryPostProcessor， 会在 refresh()->invokeBeanFactoryPostProcessors 调用接口方法
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor, PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
 
 	private static final String IMPORT_REGISTRY_BEAN_NAME =
@@ -205,6 +210,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	// @Configuration 注解解析
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+		// 被确认为配置类的bean定义都放在集合configCandidates中
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		// 所有带 @Configuration 注解的bean, @Configuration 注解是组合注解，包含 @Component
 		String[] candidateNames = registry.getBeanDefinitionNames();
@@ -217,12 +223,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
+			// ConfigurationClassUtils.checkConfigurationClassCandidate 里面的通过当前类的注解来判断是否为配置类
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
+				// 例如有@Configuration注解的类，被判定为配置类，放入集合configCandidates中
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
 		}
 
-		// Return immediately if no @Configuration classes were found
+		// 如果一个配置类都没找到，就直接返回了
 		if (configCandidates.isEmpty()) {
 			return;
 		}

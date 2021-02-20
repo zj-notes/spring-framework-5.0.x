@@ -142,6 +142,7 @@ public class AnnotationConfigUtils {
 	 * @return a Set of BeanDefinitionHolders, containing all bean definitions
 	 * that have actually been registered by this call
 	 */
+	// 这个方法把 ConfigurationClassPostProcessor、AutowiredAnnotationBeanPostProcessor、CommonAnnotationBeanPostProcessor、EventListenerMethodProcessor、DefaultEventListenerFactory封装成了RootBeanDefinittion对象。
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors( BeanDefinitionRegistry registry, @Nullable Object source) {
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {

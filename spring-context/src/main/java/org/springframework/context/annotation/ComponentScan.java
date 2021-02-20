@@ -64,6 +64,10 @@ public @interface ComponentScan {
 	 * are needed &mdash; for example, {@code @ComponentScan("org.my.pkg")}
 	 * instead of {@code @ComponentScan(basePackages = "org.my.pkg")}.
 	 */
+	/**
+	 * 对应的包扫描路径 可以是单个路径，也可以是扫描的路径数组
+	 * @return
+	 */
 	@AliasFor("basePackages")
 	String[] value() default {};
 
@@ -74,6 +78,10 @@ public @interface ComponentScan {
 	 * <p>Use {@link #basePackageClasses} for a type-safe alternative to
 	 * String-based package names.
 	 */
+	/**
+	 * 和value一样是对应的包扫描路径 可以是单个路径，也可以是扫描的路径数组
+	 * @return
+	 */
 	@AliasFor("value")
 	String[] basePackages() default {};
 
@@ -82,6 +90,10 @@ public @interface ComponentScan {
 	 * to scan for annotated components. The package of each class specified will be scanned.
 	 * <p>Consider creating a special no-op marker class or interface in each package
 	 * that serves no purpose other than being referenced by this attribute.
+	 */
+	/**
+	 * 指定具体的扫描的类
+	 * @return
 	 */
 	Class<?>[] basePackageClasses() default {};
 
@@ -95,10 +107,17 @@ public @interface ComponentScan {
 	 * application context at bootstrap time.
 	 * @see AnnotationConfigApplicationContext#setBeanNameGenerator(BeanNameGenerator)
 	 */
+	/**
+	 * 对应的bean名称的生成器 默认的是BeanNameGenerator
+	 * @return
+	 */
 	Class<? extends BeanNameGenerator> nameGenerator() default BeanNameGenerator.class;
 
 	/**
 	 * The {@link ScopeMetadataResolver} to be used for resolving the scope of detected components.
+	 */
+	/**
+	 * 处理检测到的bean的scope范围
 	 */
 	Class<? extends ScopeMetadataResolver> scopeResolver() default AnnotationScopeMetadataResolver.class;
 
@@ -117,11 +136,19 @@ public @interface ComponentScan {
 	 * <p>Consider use of {@link #includeFilters} and {@link #excludeFilters}
 	 * for a more flexible approach.
 	 */
+	/**
+	 * 控制符合组件检测条件的类文件   默认是包扫描下的  **\*.class
+     * @return
+	 */
 	String resourcePattern() default ClassPathScanningCandidateComponentProvider.DEFAULT_RESOURCE_PATTERN;
 
 	/**
 	 * Indicates whether automatic detection of classes annotated with {@code @Component}
 	 * {@code @Repository}, {@code @Service}, or {@code @Controller} should be enabled.
+	 */
+	/**
+	 * 是否对带有@Component @Repository @Service @Controller注解的类开启检测,默认是开启的
+	 * @return
 	 */
 	boolean useDefaultFilters() default true;
 
@@ -135,11 +162,24 @@ public @interface ComponentScan {
 	 * @see #resourcePattern()
 	 * @see #useDefaultFilters()
 	 */
+	/**
+	 * 指定某些定义Filter满足条件的组件 FilterType有5种类型如：
+	 *   ANNOTATION, 注解类型 默认
+		 ASSIGNABLE_TYPE,指定固定类
+		 ASPECTJ， ASPECTJ类型
+		 REGEX,正则表达式
+		 CUSTOM,自定义类型
+	 * @return
+	 */
 	Filter[] includeFilters() default {};
 
 	/**
 	 * Specifies which types are not eligible for component scanning.
 	 * @see #resourcePattern
+	 */
+	/**
+	 * 排除某些过来器扫描到的类
+	 * @return
 	 */
 	Filter[] excludeFilters() default {};
 
@@ -147,6 +187,10 @@ public @interface ComponentScan {
 	 * Specify whether scanned beans should be registered for lazy initialization.
 	 * <p>Default is {@code false}; switch this to {@code true} when desired.
 	 * @since 4.1
+	 */
+	/**
+	 * 扫描到的类是都开启懒加载 ，默认是不开启的
+	 * @return
 	 */
 	boolean lazyInit() default false;
 
