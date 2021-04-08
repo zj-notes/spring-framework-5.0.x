@@ -84,15 +84,13 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		// 获取注解元数据信息
 		AnnotationMetadata metadata;
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
-			// Can reuse the pre-parsed metadata from the given BeanDefinition...
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
-			// Check already loaded Class if present...
-			// since we possibly can't even load the class file for this Class.
 			Class<?> beanClass = ((AbstractBeanDefinition) beanDef).getBeanClass();
 			metadata = new StandardAnnotationMetadata(beanClass, true);
 		}
@@ -109,9 +107,14 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		// 查找当前注解是否是与@Configuration相关
+		// 该方法还会判断该注解上的注解是否有@Configuration，一直往上寻找
+		// 因为有的注解为复合注解
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		// 查找当前注解上是否有ComponentScan、Component、Import、ImportResource注解
+		// 如果没有则查找Bean注解，同上，一直往上查找
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}

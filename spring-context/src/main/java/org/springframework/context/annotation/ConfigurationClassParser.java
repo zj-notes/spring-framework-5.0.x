@@ -228,7 +228,7 @@ class ConfigurationClassParser {
 		// 处理内部类逻辑，由于传来的参数是我们的启动类，不含内部类，所以跳过
 		processMemberClasses(configClass, sourceClass);
 
-		// 针对属性配置的解析
+		// @PropertySource 注解处理
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
 				org.springframework.context.annotation.PropertySource.class)) {
@@ -244,14 +244,17 @@ class ConfigurationClassParser {
 		// @ComponentScan 注解解析
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable( sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() && !this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
+			// ComponentScan属性可能有多个，因为可能配置了ComponentScans注解
 			for (AnnotationAttributes componentScan : componentScans) {
+				// 通过配置的 @ComponentScan 注解的信息进行包扫描
+				// 扫描后的类型将注册成 BeanDefinitionHolder 并返回
 				Set<BeanDefinitionHolder> scannedBeanDefinitions = this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
-				// 遍历我们项目中的bean，如果是注解定义的bean，则进一步解析
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
 					BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
+					// 扫描出来的类，又调用了parse，进行递归处理
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
@@ -259,6 +262,7 @@ class ConfigurationClassParser {
 			}
 		}
 
+		// 处理@Import注解
 		// 这里又是一个递归解析，获取导入的配置类。很多情况下，导入的配置类中会同样包含导入类注解。
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
@@ -273,8 +277,10 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// Process individual @Bean methods
+		// @Bean注解处理，这里只是将配置了@Bean方法的信息收集起来，并没有做特殊处理
+		// 获取所有配置了@Bean注解的方法元数据信息
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
+		// 将其封装成BeanMethod，并放入到 ConfigurationClass 对象的集合中待后续处理
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
