@@ -145,9 +145,7 @@ class ConfigurationClassBeanDefinitionReader {
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 
-	/**
-	 * Register the {@link Configuration} class itself as a bean definition.
-	 */
+	// @Import注解处理
 	private void registerBeanDefinitionForImportedConfigurationClass(ConfigurationClass configClass) {
 		AnnotationMetadata metadata = configClass.getMetadata();
 		AnnotatedGenericBeanDefinition configBeanDef = new AnnotatedGenericBeanDefinition(metadata);

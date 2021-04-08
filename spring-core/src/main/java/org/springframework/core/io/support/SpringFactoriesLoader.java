@@ -40,31 +40,12 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * General purpose factory loading mechanism for internal use within the framework.
- *
- * <p>{@code SpringFactoriesLoader} {@linkplain #loadFactories loads} and instantiates
- * factories of a given type from {@value #FACTORIES_RESOURCE_LOCATION} files which
- * may be present in multiple JAR files in the classpath. The {@code spring.factories}
- * file must be in {@link Properties} format, where the key is the fully qualified
- * name of the interface or abstract class, and the value is a comma-separated list of
- * implementation class names. For example:
- *
- * <pre class="code">example.MyService=example.MyServiceImpl1,example.MyServiceImpl2</pre>
- *
- * where {@code example.MyService} is the name of the interface, and {@code MyServiceImpl1}
- * and {@code MyServiceImpl2} are two implementations.
- *
- * @author Arjen Poutsma
- * @author Juergen Hoeller
- * @author Sam Brannen
- * @since 3.2
+ * 在springboot的自动装配过程中，最终会加载META-INF/spring.factories文件，而加载的过程是由SpringFactoriesLoader加载的。
+ * 从CLASSPATH下的每个Jar包中搜寻所有META-INF/spring.factories配置文件，然后将解析properties文件，找到指定名称的配置后返回。
+ * 需要注意的是，其实这里不仅仅是会去ClassPath路径下查找，会扫描所有路径下的Jar包，只不过这个文件只会在Classpath下的jar包中。
  */
 public abstract class SpringFactoriesLoader {
 
-	/**
-	 * The location to look for factories.
-	 * <p>Can be present in multiple JAR files.
-	 */
 	public static final String FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories";
 
 
@@ -113,6 +94,9 @@ public abstract class SpringFactoriesLoader {
 	 * @throws IllegalArgumentException if an error occurs while loading factory names
 	 * @see #loadFactories
 	 */
+	// spring.factories文件的格式为：key=value1,value2,value3
+	// 从所有的jar包中找到META-INF/spring.factories文件
+	// 然后从文件中解析出key=factoryClass类名称的所有value值
 	public static List<String> loadFactoryNames(Class<?> factoryClass, @Nullable ClassLoader classLoader) {
 		String factoryClassName = factoryClass.getName();
 		return loadSpringFactories(classLoader).getOrDefault(factoryClassName, Collections.emptyList());
