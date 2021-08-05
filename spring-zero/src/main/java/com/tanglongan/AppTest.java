@@ -12,7 +12,7 @@ public class AppTest {
 
 	public static void main(String[] args) {
 		// java 配置启动
-		BeanFactory annotationApplicationContex1 = new AnnotationConfigApplicationContext("com.tanglongan");
+//		BeanFactory annotationApplicationContex1 = new AnnotationConfigApplicationContext("com.tanglongan");
 		BeanFactory annotationApplicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
 //		AppService appService = annotationApplicationContext.getBean(AppService.class);
 //		appService.print();

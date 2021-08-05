@@ -84,6 +84,7 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+		// 注册注解配置的的处理器 ConfigurationClassPostProcessor 类会在这里注册
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -221,9 +222,13 @@ public class AnnotatedBeanDefinitionReader {
 		abd.setInstanceSupplier(instanceSupplier);
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
+		// beanName
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		// 处理注解Bean定义类中通用的注解 @lazy,@primary,@DependsOn,@Role,@Description
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+
+		// @Qualifier注解,@Qualifier可以配置自动依赖注入装配的限定条件
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
@@ -237,6 +242,7 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
+		// spring5.0以后新加入的，Spring 5允许使用lambda 表达式来自定义注册一个 bean
 		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
 			customizer.customize(abd);
 		}
