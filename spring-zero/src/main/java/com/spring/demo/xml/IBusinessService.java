@@ -1,4 +1,4 @@
-package com.tanglongan.aop;
+package com.spring.demo.xml;
 
 public interface IBusinessService {
 	void executeBusinessA();

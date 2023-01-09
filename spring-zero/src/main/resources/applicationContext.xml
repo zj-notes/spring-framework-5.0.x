@@ -8,6 +8,6 @@
 	<context:component-scan base-package="com.tanglongan"/>
 	<aop:aspectj-autoproxy/>
 
-	<bean id="appService" name="appServiceName" scope="singleton" class="com.tanglongan.AppService"/>
+	<bean id="appService" name="appServiceName" scope="singleton" class="com.spring.demo.xml.AppService"/>
 
 </beans>

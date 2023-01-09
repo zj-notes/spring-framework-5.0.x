@@ -1,4 +1,4 @@
-package com.tanglongan.aop;
+package com.spring.demo.javaconfig;
 
 import org.springframework.stereotype.Service;
 

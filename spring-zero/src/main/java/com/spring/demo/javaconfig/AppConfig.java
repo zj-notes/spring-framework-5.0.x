@@ -1,11 +1,11 @@
-package com.tanglongan;
+package com.spring.demo.javaconfig;
 
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 @Component
-@ComponentScan("com.tanglongan")
-// @Configuration 也可以
+@ComponentScan("com.spring.demo")
 public class AppConfig {
 
 }
