@@ -4,7 +4,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class AppTest {
+public class XmlTest {
 
 	public static void main(String[] args) {
 		// xml配置文件启动，核心方法refresh()

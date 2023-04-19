@@ -5,8 +5,7 @@
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<context:component-scan base-package="com.tanglongan"/>
-	<aop:aspectj-autoproxy/>
+	<context:component-scan base-package="com.spring.demo.xml"/>
 
 	<bean id="appService" name="appServiceName" scope="singleton" class="com.spring.demo.xml.AppService"/>
 
